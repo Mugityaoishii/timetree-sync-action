@@ -49,9 +49,6 @@ def sync():
     google = GoogleCalendarClient(
         Config.GOOGLE_SERVICE_ACCOUNT_JSON,
     )
-    google_calendar = google.get_calendar(
-        Config.GOOGLE_CALENDAR_ID,
-    )
     logger.info("Connected to Google Calendar")
 
     google_events = google.list_events(
