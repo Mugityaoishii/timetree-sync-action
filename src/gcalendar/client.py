@@ -1,16 +1,20 @@
 import json
+from typing import ClassVar
+
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 
-class GoogleCalendarClient:
 
-    SCOPES = [
+class GoogleCalendarClient:
+    SCOPES: ClassVar[list[str]] = [
         "https://www.googleapis.com/auth/calendar"
     ]
 
     def __init__(self, credentials_json: str):
+        credentials_info = json.loads(credentials_json)
+
         credentials = service_account.Credentials.from_service_account_info(
-            json.loads(credentials_json),
+            credentials_info,
             scopes=self.SCOPES,
         )
 
@@ -18,7 +22,6 @@ class GoogleCalendarClient:
             "calendar",
             "v3",
             credentials=credentials,
-            cache_discovery=False,
         )
 
     def get_calendar(self, calendar_id: str):
