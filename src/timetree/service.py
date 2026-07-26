@@ -2,8 +2,10 @@ from timetree_exporter.api.auth import login
 from timetree_exporter.api.calendar import TimeTreeCalendar
 from timetree_exporter.calendar import Calendar
 
+
 class TimeTreeService:
     """Bridge to the bundled TimeTree-exporter."""
+
     def login(self, email: str, password: str) -> None:
         session_id = login(email, password)
         if session_id is None:
@@ -15,9 +17,7 @@ class TimeTreeService:
             raise RuntimeError("Not logged in.")
         calendars = self._calendar_api.get_metadata()
         return [
-            calendar
-            for calendar in calendars
-            if calendar["deactivated_at"] is None
+            calendar for calendar in calendars if calendar["deactivated_at"] is None
         ]
 
     def get_calendar(self, alias_code: str) -> Calendar:

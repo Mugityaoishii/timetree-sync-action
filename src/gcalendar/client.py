@@ -6,9 +6,7 @@ from googleapiclient.discovery import build
 
 
 class GoogleCalendarClient:
-    SCOPES: ClassVar[list[str]] = [
-        "https://www.googleapis.com/auth/calendar"
-    ]
+    SCOPES: ClassVar[list[str]] = ["https://www.googleapis.com/auth/calendar"]
 
     def __init__(self, credentials_json: str):
         credentials_info = json.loads(credentials_json)
@@ -25,11 +23,7 @@ class GoogleCalendarClient:
         )
 
     def get_calendar(self, calendar_id: str):
-        return (
-            self._service.calendars()
-            .get(calendarId=calendar_id)
-            .execute()
-        )
+        return self._service.calendars().get(calendarId=calendar_id).execute()
 
     def create_event(self, calendar_id: str, event: dict):
         return (

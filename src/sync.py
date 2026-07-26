@@ -4,8 +4,10 @@ from logger import logger
 from models import Event
 from timetree import TimeTree
 
+
 def _private_properties(google_event: dict) -> dict:
     return google_event.get("extendedProperties", {}).get("private", {})
+
 
 def _is_managed_google_event(google_event: dict, calendar_code: str) -> bool:
     """Return True only for events owned by this TimeTree sync.
@@ -26,10 +28,8 @@ def _is_managed_google_event(google_event: dict, calendar_code: str) -> bool:
     if sync_source is None and source_calendar_code is None:
         return True
 
-    return (
-        sync_source == Event.SYNC_SOURCE
-        and source_calendar_code == calendar_code
-    )
+    return sync_source == Event.SYNC_SOURCE and source_calendar_code == calendar_code
+
 
 def sync():
     client = TimeTree()
@@ -91,8 +91,7 @@ def sync():
         props = _private_properties(google_event)
         needs_marker_migration = (
             props.get("sync_source") != Event.SYNC_SOURCE
-            or props.get("timetree_calendar_code")
-            != Config.TIMETREE_CALENDAR_CODE
+            or props.get("timetree_calendar_code") != Config.TIMETREE_CALENDAR_CODE
         )
 
         if needs_marker_migration or not event.equals_google(

@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import ClassVar
 from zoneinfo import ZoneInfo
 
+
 @dataclass
 class Event:
     SYNC_SOURCE: ClassVar[str] = "timetree-sync-action"

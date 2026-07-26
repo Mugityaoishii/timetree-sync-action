@@ -1,10 +1,13 @@
 from __future__ import annotations
+
 from typing import Any
+
 import requests
 
 
 class TimeTreeClient:
     BASE_URL = "https://timetreeapp.com"
+
     def __init__(self) -> None:
         self.session = requests.Session()
         self.session.headers.update(
