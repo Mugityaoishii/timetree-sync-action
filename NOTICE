@@ -1,0 +1,39 @@
+This project includes or may include third-party software.
+
+Third-party components will be included in accordance with their respective licenses.
+
+Current third-party components
+==============================
+
+TimeTree-exporter
+https://github.com/eoleedi/TimeTree-exporter
+
+License
+-------
+MIT License
+
+Copyright (c) eoleedi
+
+Used under the terms of the MIT License.
+
+Future planned dependency
+=========================
+
+TimeTree-exporter
+https://github.com/eoleedi/TimeTree-exporter
+
+License:
+MIT License
+
+If this project includes source code from TimeTree-exporter,
+the original copyright notice and license
+will be preserved in accordance with the MIT License.
+
+Project Policy
+==============
+
+This project prefers using upstream open source projects
+instead of duplicating implementations whenever possible.
+
+Bug fixes and improvements should be contributed upstream
+when appropriate.
