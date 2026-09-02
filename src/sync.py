@@ -41,9 +41,13 @@ def sync():
         Config.TIMETREE_CALENDAR_CODE,
     )
     logger.info("Selected TimeTree calendar")
-
+    labels = client.get_labels(claendar)
     raw_events = client.get_events(calendar)
     events = [Event.from_timetree(raw) for raw in raw_events]
+    label_names = {
+        label_id: label["name"]
+        for label_id, label in label in label.items()
+    }
     timetree_ids = {event.id for event in events}
 
     google = GoogleCalendarClient(
