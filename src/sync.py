@@ -67,12 +67,12 @@ calendar_by_label = {
         "けんた会社":Config.GOOGLE_CALENDAR_ID_KENTA_WORK,
     }
     
-    timetree_ids = {event.id for event in events}
+timetree_ids = {event.id for event in events}
 
-    google = GoogleCalendarClient(
+google = GoogleCalendarClient(
         Config.GOOGLE_SERVICE_ACCOUNT_JSON,
     )
-    logger.info("Connected to Google Calendar")
+logger.info("Connected to Google Calendar")
 
         # Collect managed events from all destination Google calendars.
     google_event_map: dict[str, list[tuple[str, dict]]] = {}
