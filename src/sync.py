@@ -79,20 +79,20 @@ google_event_map: dict[str, list[tuple[str, dict]]] = {}
 
 destination_calendar_ids = list(dict.fromkeys(calendar_by_label.values()))
 
-for calendar_id in destination_calendar_ids:
-    google_events = google.list_events(calendar_id)
+    for calendar_id in destination_calendar_ids:
+        google_events = google.list_events(calendar_id)
 
-    for google_event in google_events:
-         if not _is_managed_google_event(
-            google_event,
-            Config.TIMETREE_CALENDAR_CODE,
-        ):
-            continue
+        for google_event in google_events:
+            if not _is_managed_google_event(
+                google_event,
+                Config.TIMETREE_CALENDAR_CODE,
+            ):
+                continue
 
-        timetree_id = _private_properties(google_event)["timetree_id"]
-        google_event_map.setdefault(timetree_id, []).append(
-             (calendar_id, google_event)
-        )
+            timetree_id = _private_properties(google_event)["timetree_id"]
+            google_event_map.setdefault(timetree_id, []).append(
+                (calendar_id, google_event)
+            )
 
 created_count = 0
 updated_count = 0
