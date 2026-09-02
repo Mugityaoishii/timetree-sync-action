@@ -64,83 +64,106 @@ def sync():
     )
     logger.info("Connected to Google Calendar")
 
-    google_events = google.list_events(
-        Config.GOOGLE_CALENDAR_ID,
-    )
+        # Collect managed events from all destination Google calendars.
+    google_event_map: dict[str, list[tuple[str, dict]]] = {}
 
-    # Keep all Google copies for each TimeTree ID. This lets us clean up
-    # duplicates left by older versions or interrupted sync runs.
-    google_event_map: dict[str, list[dict]] = {}
+    destination_calendar_ids = list(dict.fromkeys(calendar_by_label.values()))
 
-    for google_event in google_events:
-        if not _is_managed_google_event(
-            google_event,
-            Config.TIMETREE_CALENDAR_CODE,
-        ):
-            # Native Google Calendar events and events managed by another
-            # calendar/workflow are intentionally ignored.
-            continue
+    for calendar_id in destination_calendar_ids:
+        google_events = google.list_events(calendar_id)
 
-        timetree_id = _private_properties(google_event)["timetree_id"]
-        google_event_map.setdefault(timetree_id, []).append(google_event)
+        for google_event in google_events:
+            if not _is_managed_google_event(
+                google_event,
+                Config.TIMETREE_CALENDAR_CODE,
+            ):
+                continue
+
+            timetree_id = _private_properties(google_event)["timetree_id"]
+            google_event_map.setdefault(timetree_id, []).append(
+                (calendar_id, google_event)
+            )
 
     created_count = 0
     updated_count = 0
     deleted_count = 0
     skipped_count = 0
 
+    # Create/update only events whose TimeTree label is mapped.
+    synced_timetree_ids = set()
+
     for event in events:
+        label_name = label_names.get(event.label_id)
+        target_calendar_id = calendar_by_label.get(label_name)
+
+        # Unmapped labels (including gray labels) are not synced.
+        if target_calendar_id is None:
+            continue
+
+        synced_timetree_ids.add(event.id)
         matches = google_event_map.get(event.id, [])
-        if not matches:
+
+        target_matches = [
+            google_event
+            for calendar_id, google_event in matches
+            if calendar_id == target_calendar_id
+        ]
+
+        if not target_matches:
             google.create_event(
-                Config.GOOGLE_CALENDAR_ID,
+                target_calendar_id,
                 event.to_google(Config.TIMETREE_CALENDAR_CODE),
             )
             created_count += 1
-            continue
-
-        # Keep one canonical Google event for this TimeTree event.
-        google_event = matches[0]
-        props = _private_properties(google_event)
-        needs_marker_migration = (
-            props.get("sync_source") != Event.SYNC_SOURCE
-            or props.get("timetree_calendar_code") != Config.TIMETREE_CALENDAR_CODE
-        )
-
-        if needs_marker_migration or not event.equals_google(
-            google_event,
-            Config.TIMETREE_CALENDAR_CODE,
-        ):
-            google.update_event(
-                Config.GOOGLE_CALENDAR_ID,
-                google_event["id"],
-                event.to_google(Config.TIMETREE_CALENDAR_CODE),
-            )
-            updated_count += 1
         else:
-            skipped_count += 1
+            google_event = target_matches[0]
+            props = _private_properties(google_event)
 
-        # Remove duplicate Google copies carrying the same TimeTree ID.
-        for duplicate in matches[1:]:
-            google.delete_event(
-                Config.GOOGLE_CALENDAR_ID,
-                duplicate["id"],
+            needs_marker_migration = (
+                props.get("sync_source") != Event.SYNC_SOURCE
+                or props.get("timetree_calendar_code")
+                != Config.TIMETREE_CALENDAR_CODE
             )
-            deleted_count += 1
 
-    # Delete Google events owned by this sync when the source TimeTree event
-    # no longer exists. Native Google Calendar events are never included in
-    # google_event_map, so they are left untouched.
-    for timetree_id, matches in google_event_map.items():
-        if timetree_id in timetree_ids:
-            continue
+            if needs_marker_migration or not event.equals_google(
+                google_event,
+                Config.TIMETREE_CALENDAR_CODE,
+            ):
+                google.update_event(
+                    target_calendar_id,
+                    google_event["id"],
+                    event.to_google(Config.TIMETREE_CALENDAR_CODE),
+                )
+                updated_count += 1
+            else:
+                skipped_count += 1
 
-        for google_event in matches:
+        # Remove copies from the wrong calendar, and duplicate copies.
+        kept_target_copy = False
+
+        for calendar_id, google_event in matches:
+            if calendar_id == target_calendar_id and not kept_target_copy:
+                kept_target_copy = True
+                continue
+
             google.delete_event(
-                Config.GOOGLE_CALENDAR_ID,
+                calendar_id,
                 google_event["id"],
             )
             deleted_count += 1
+
+    # Delete previously synced events that were deleted from TimeTree
+    # or changed to an unmapped label.
+    for timetree_id, matches in google_event_map.items():
+        if timetree_id in synced_timetree_ids:
+            continue
+
+        for calendar_id, google_event in matches:
+            google.delete_event(
+                calendar_id,
+                google_event["id"],
+            )
+            deleted_count += 1    
 
     logger.info(
         "Sync complete: created=%d updated=%d deleted=%d skipped=%d",
