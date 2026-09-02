@@ -41,13 +41,22 @@ def sync():
         Config.TIMETREE_CALENDAR_CODE,
     )
     logger.info("Selected TimeTree calendar")
-    labels = client.get_labels(claendar)
+    labels = client.get_labels(calendar)
     raw_events = client.get_events(calendar)
     events = [Event.from_timetree(raw) for raw in raw_events]
     label_names = {
         label_id: label["name"]
-        for label_id, label in label in label.items()
+        for label_id, label in labels.items()
     }
+
+    calendar_by_label = {
+        "2人の予定":Config.GOOGLE_CALENDAR_ID_SHARED,
+        "ももこの予定":Config.GOOGLE_CALENDAR_ID_MOMOKO,
+        "けんたの予定":Config.GOOGLE_CALENDAR_ID_KENTA,
+        "ももこ会社":Config.GOOGLE_CALENDAR_ID_MOMOKO_WORK,
+        "けんた会社":Config.GOOGLE_CALENDAR_ID_KENTA_WORK,
+    }
+    
     timetree_ids = {event.id for event in events}
 
     google = GoogleCalendarClient(
