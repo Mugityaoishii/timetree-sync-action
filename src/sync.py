@@ -46,8 +46,8 @@ def sync():
     raw_events = client.get_events(calendar)
     events = [Event.from_timetree(raw) for raw in raw_events]
     now = datetime.now().astimezone()
-sync_from = now.replace(hour=0, minute=0, second=0, microsecond=0)
-sync_until = sync_from + timedelta(days=365)
+    sync_from = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    sync_until = sync_from + timedelta(days=365)
 
 events = [
     event
