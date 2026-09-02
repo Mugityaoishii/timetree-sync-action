@@ -3,6 +3,7 @@ from gcalendar import GoogleCalendarClient
 from logger import logger
 from models import Event
 from timetree import TimeTree
+from datetime import datetime, timedelta
 
 
 def _private_properties(google_event: dict) -> dict:
@@ -44,6 +45,15 @@ def sync():
     labels = client.get_labels(calendar)
     raw_events = client.get_events(calendar)
     events = [Event.from_timetree(raw) for raw in raw_events]
+    now = datetime.now().astimezone()
+sync_from = now.replace(hour=0, minute=0, second=0, microsecond=0)
+sync_until = sync_from + timedelta(days=365)
+
+events = [
+    event
+    for event in events
+    if event.end >= sync_from and event.start <= sync_until
+]
     label_names = {
         label_id: label["name"]
         for label_id, label in labels.items()
