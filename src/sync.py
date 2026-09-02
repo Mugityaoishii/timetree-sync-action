@@ -54,12 +54,12 @@ events = [
     for event in events
     if event.end >= sync_from and event.start <= sync_until
 ]
-    label_names = {
-        label_id: label["name"]
-        for label_id, label in labels.items()
-    }
+label_names = {
+    label_id: label["name"]
+    for label_id, label in labels.items()
+}
 
-    calendar_by_label = {
+calendar_by_label = {
         "2人の予定":Config.GOOGLE_CALENDAR_ID_SHARED,
         "ももこの予定":Config.GOOGLE_CALENDAR_ID_MOMOKO,
         "けんたの予定":Config.GOOGLE_CALENDAR_ID_KENTA,
