@@ -15,6 +15,7 @@ class Event:
     all_day: bool
     location: str | None = None
     description: str | None = None
+    label_id: int | None = None
 
     @classmethod
     def from_timetree(cls, event: dict):
@@ -35,6 +36,7 @@ class Event:
             all_day=event["all_day"],
             location=event.get("location") or None,
             description=event.get("note") or None,
+            label_id=event.get("label_id"),
         )
 
     def to_google(self, calendar_code: str) -> dict:
